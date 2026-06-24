@@ -1,0 +1,8 @@
+{
+  "name": "Gîtes et Chambres d'Hôtes Madagascar",
+  "description": "Un site vitrine moderne et épuré pour les chambres d'hôtes et gîtes d'étapes à Madagascar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
