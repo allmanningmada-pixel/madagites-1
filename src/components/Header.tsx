@@ -6,13 +6,15 @@ interface HeaderProps {
   featuredCount: number;
   regionsCount: number;
   onSearchFocus: () => void;
+  onRegisterClick: () => void;
 }
 
 export default function Header({
   totalCount,
   featuredCount,
   regionsCount,
-  onSearchFocus
+  onSearchFocus,
+  onRegisterClick
 }: HeaderProps) {
   return (
     <header className="relative bg-stone-900 text-white overflow-hidden">
@@ -49,8 +51,9 @@ export default function Header({
           </div>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-stone-300 uppercase tracking-wider">
-            <a href="#catalog-section" className="hover:text-orange-400 transition-colors">Découvrir les Logements</a>
+            <a href="#catalog-section" className="hover:text-orange-400 transition-colors">Découvrir</a>
             <a href="#how-it-works" className="hover:text-orange-400 transition-colors">Comment ça marche ?</a>
+            <button onClick={onRegisterClick} className="hover:text-orange-300 text-orange-400 transition-colors cursor-pointer text-left font-bold uppercase text-sm">Inscrire mon Gîte</button>
             <a href="#sheet-simulator-section" className="text-orange-400 bg-orange-950/60 border border-orange-800/50 px-3.5 py-1 rounded-full text-xs font-mono flex items-center gap-1.5 hover:bg-orange-900/40 transition-all">
               <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></span>
               Simulateur Google Sheets

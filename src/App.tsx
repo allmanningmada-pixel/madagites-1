@@ -9,6 +9,7 @@ import { INITIAL_ACCOMMODATIONS } from './data';
 import Header from './components/Header';
 import Catalog from './components/Catalog';
 import DetailModal from './components/DetailModal';
+import OwnerRegistration from './components/OwnerRegistration';
 import SheetSimulator from './components/SheetSimulator';
 import Footer from './components/Footer';
 import { Sparkles, MessageCircle, Info, ShieldCheck, MapPin } from 'lucide-react';
@@ -19,6 +20,7 @@ export default function App() {
   // State for accommodations
   const [accommodations, setAccommodations] = useState<Accommodation[]>([]);
   const [selectedAccommodation, setSelectedAccommodation] = useState<Accommodation | null>(null);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // State for search/filters
   const [filters, setFilters] = useState<FilterState>({
@@ -152,6 +154,7 @@ export default function App() {
         featuredCount={featuredAccommodations.length}
         regionsCount={distinctRegions}
         onSearchFocus={handleFocusSearch}
+        onRegisterClick={() => setIsRegisterModalOpen(true)}
       />
 
       {/* Featured / Coup de Coeur Section (Horizontal scrolling list on mobile, grid on desktop) */}
@@ -273,6 +276,13 @@ export default function App() {
         </div>
       </section>
 
+      {/* Owner Registration Form Section */}
+      <OwnerRegistration
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onAddAccommodation={handleAddAccommodation}
+      />
+
       {/* Google Sheets Live Database Editor Section */}
       <SheetSimulator
         accommodations={accommodations}
@@ -283,7 +293,7 @@ export default function App() {
       />
 
       {/* Footer information */}
-      <Footer />
+      <Footer onRegisterClick={() => setIsRegisterModalOpen(true)} />
 
       {/* Selected Accommodation Detail Modal Pop-up */}
       <DetailModal

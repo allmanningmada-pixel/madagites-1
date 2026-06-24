@@ -1,7 +1,11 @@
 import React from 'react';
 import { Palmtree, ArrowUp, Heart } from 'lucide-react';
 
-export default function Footer() {
+interface FooterProps {
+  onRegisterClick: () => void;
+}
+
+export default function Footer({ onRegisterClick }: FooterProps) {
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -57,13 +61,19 @@ export default function Footer() {
           <p className="text-stone-400 text-xs leading-relaxed">
             Grâce à notre intégration avec Google Sheets, les propriétaires locaux peuvent mettre à jour leurs tarifs, disponibilités, et photos sans aucune connaissance technique, simplement depuis leur téléphone via l'application Google Sheets.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col gap-1.5">
             <a
               href="#sheet-simulator-section"
               className="text-orange-400 font-mono text-[11px] underline hover:text-orange-300 transition-colors"
             >
               Voir le simulateur Google Sheets →
             </a>
+            <button
+              onClick={onRegisterClick}
+              className="text-orange-400 font-mono text-[11px] underline hover:text-orange-300 transition-colors text-left cursor-pointer"
+            >
+              S'inscrire comme propriétaire →
+            </button>
           </div>
         </div>
 
