@@ -9,13 +9,19 @@ export const INITIAL_ACCOMMODATIONS: Accommodation[] = [
     region: 'Diana',
     priceAriary: 120000,
     priceEuro: 27,
-    photo: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=800&q=85',
+    photo: 'https://boutiquetravelexperts.com/wp-content/uploads/2022/09/Hotel-Lakana-5.jpg',
     description: 'Bungalow traditionnel en bois de palissandre avec toit en feuilles de Ravinala. Situé les pieds dans l\'eau sur la plage d\'Ambatoloaka. Parfait pour admirer les couchers de soleil tropicaux dans un calme absolu.',
     amenities: ['Wi-Fi gratuit', 'Plage privée', 'Ventilateur', 'Eau chaude', 'Petit-déjeuner inclus', 'Transfert aéroport'],
     whatsappNumber: '+261340000001',
     capacity: '2 personnes',
     locationDetails: 'À 5 minutes à pied des restaurants locaux d\'Ambatoloaka, en bordure directe de plage.',
-    isFeatured: true
+    isFeatured: true,
+    statCardNumber: '10234 11 2024 0 00123',
+    nifNumber: '3001245678',
+    createdAt: '2026-01-10T10:00:00.000Z',
+    expiresAt: '2027-01-10T10:00:00.000Z',
+    status: 'approved',
+    hasAcceptedTerms: true
   },
   {
     id: '2',
@@ -31,7 +37,13 @@ export const INITIAL_ACCOMMODATIONS: Accommodation[] = [
     whatsappNumber: '+261320000002',
     capacity: '2 à 4 personnes',
     locationDetails: 'À seulement 500m de l\'entrée Est du Parc National de l\'Ankarana.',
-    isFeatured: false
+    isFeatured: false,
+    statCardNumber: '20145 12 2023 1 00456',
+    nifNumber: '4009871234',
+    createdAt: '2026-03-15T09:00:00.000Z',
+    expiresAt: '2027-03-15T09:00:00.000Z',
+    status: 'approved',
+    hasAcceptedTerms: true
   },
   {
     id: '3',
@@ -41,13 +53,19 @@ export const INITIAL_ACCOMMODATIONS: Accommodation[] = [
     region: 'Menabe',
     priceAriary: 160000,
     priceEuro: 36,
-    photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=85',
+    photo: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=85',
     description: 'Une magnifique villa d\'hôtes alliant confort moderne et style traditionnel malgache. Idéalement située pour visiter la célèbre Allée des Baobabs au lever ou au coucher du soleil.',
     amenities: ['Wi-Fi gratuit', 'Piscine extérieure', 'Climatisation', 'Eau chaude', 'Cuisine équipée', 'Parking sécurisé'],
     whatsappNumber: '+261340000003',
     capacity: '2 à 3 personnes',
     locationDetails: 'Dans le quartier résidentiel de Nosy Kely, à 2 minutes de la plage et 30 minutes de l\'Allée des Baobabs.',
-    isFeatured: true
+    isFeatured: true,
+    statCardNumber: '30498 21 2025 0 00789',
+    nifNumber: '5001234567',
+    createdAt: '2025-12-01T14:30:00.000Z',
+    expiresAt: '2026-12-01T14:30:00.000Z',
+    status: 'approved',
+    hasAcceptedTerms: true
   },
   {
     id: '4',
@@ -57,13 +75,19 @@ export const INITIAL_ACCOMMODATIONS: Accommodation[] = [
     region: 'Vakinankaratra',
     priceAriary: 95000,
     priceEuro: 21,
-    photo: 'https://images.unsplash.com/photo-1508333706533-1ab43ecb1606?auto=format&fit=crop&w=800&q=85',
+    photo: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=85',
     description: 'Maison d\'hôtes de charme en briques rouges typiques des Hauts Plateaux. Ambiance chaleureuse avec cheminée pour les soirées fraîches d\'Antsirabe, salon de thé et jardin fleuri très soigné.',
     amenities: ['Cheminée', 'Petit-déjeuner inclus', 'Chauffage d\'appoint', 'Eau chaude', 'Bibliothèque', 'Jardin clos'],
     whatsappNumber: '+261330000004',
     capacity: '2 à 4 personnes',
     locationDetails: 'Situé dans un quartier calme et historique d\'Antsirabe, non loin des artisans de miniatures.',
-    isFeatured: false
+    isFeatured: false,
+    statCardNumber: '40112 22 2024 1 00234',
+    nifNumber: '1008765432',
+    createdAt: '2026-05-20T11:00:00.000Z',
+    expiresAt: '2027-05-20T11:00:00.000Z',
+    status: 'approved',
+    hasAcceptedTerms: true
   },
   {
     id: '5',
@@ -73,13 +97,19 @@ export const INITIAL_ACCOMMODATIONS: Accommodation[] = [
     region: 'Ihorombe',
     priceAriary: 110000,
     priceEuro: 25,
-    photo: 'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=85',
+    photo: 'https://www.fivestaralliance.com/files/fivestaralliance.com/field/image/nodes/2015/23946/23946_0_constancelodgetsarabanjina_fsa-g.jpg',
     description: 'Éco-gîte construit en pierres de l\'Isalo se fondant parfaitement dans le paysage de grès ruiniforme. Un lieu magique pour se ressourcer après une journée de trekking intense dans le canyon.',
     amenities: ['Panneaux solaires', 'Eau chaude', 'Restaurant panoramique', 'Espace feu de camp', 'Moustiquaire', 'Randonnées accompagnées'],
     whatsappNumber: '+261340000005',
     capacity: '1 à 5 personnes (dortoirs & privés)',
     locationDetails: 'Bordure du Parc National de l\'Isalo, à 2km du village de Ranohira.',
-    isFeatured: true
+    isFeatured: true,
+    statCardNumber: '50298 31 2025 0 00876',
+    nifNumber: '2004567891',
+    createdAt: '2026-02-18T16:00:00.000Z',
+    expiresAt: '2027-02-18T16:00:00.000Z',
+    status: 'approved',
+    hasAcceptedTerms: true
   },
   {
     id: '6',
@@ -89,13 +119,19 @@ export const INITIAL_ACCOMMODATIONS: Accommodation[] = [
     region: 'Haute Matsiatra',
     priceAriary: 85000,
     priceEuro: 19,
-    photo: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=85',
+    photo: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=800&q=85',
     description: 'Gîte d\'étape d\'inspiration écologique au cœur de la forêt tropicale humide de Ranomafana. Écoutez le chant des oiseaux et le murmure de la rivière Namorona depuis votre balcon en bois.',
     amenities: ['Balcon privé', 'Moustiquaire', 'Restauration bio locale', 'Eau chaude', 'Wi-Fi à l\'accueil', 'Espace de yoga'],
     whatsappNumber: '+261340000006',
     capacity: '2 personnes',
     locationDetails: 'Surplombant la rivière Namorona, à 10 minutes en voiture de l\'entrée principale du parc thermal.',
-    isFeatured: false
+    isFeatured: false,
+    statCardNumber: '60334 32 2024 1 00543',
+    nifNumber: '6001249876',
+    createdAt: '2026-04-10T15:00:00.000Z',
+    expiresAt: '2027-04-10T15:00:00.000Z',
+    status: 'approved',
+    hasAcceptedTerms: true
   }
 ];
 

@@ -13,6 +13,12 @@ export interface Accommodation {
   capacity: string;
   locationDetails: string;
   isFeatured?: boolean;
+  statCardNumber?: string;
+  nifNumber?: string;
+  createdAt?: string; // ISO Date String
+  expiresAt?: string; // ISO Date String
+  status?: 'pending' | 'approved' | 'rejected' | 'expired';
+  hasAcceptedTerms?: boolean;
 }
 
 export type AccommodationTypeFilter = 'all' | 'chambre' | 'gite';

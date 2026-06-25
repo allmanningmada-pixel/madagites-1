@@ -9,6 +9,7 @@ interface SheetSimulatorProps {
   onUpdate: (item: Accommodation) => void;
   onDelete: (id: string) => void;
   onReset: () => void;
+  currentLang: "fr" | "en";
 }
 
 export default function SheetSimulator({
@@ -16,7 +17,8 @@ export default function SheetSimulator({
   onAdd,
   onUpdate,
   onDelete,
-  onReset
+  onReset,
+  currentLang
 }: SheetSimulatorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -61,13 +63,22 @@ export default function SheetSimulator({
       whatsappNumber: '+261340000000',
       capacity: '2 personnes',
       locationDetails: '',
-      isFeatured: false
+      isFeatured: false,
+      status: 'approved',
+      nifNumber: '3000123456',
+      statCardNumber: '12345 12 1234 1 12345',
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
     });
   };
 
   const handleSave = () => {
     if (!formData.name || !formData.city || !formData.description) {
-      alert('Veuillez remplir au moins le nom, la ville et la description.');
+      if (currentLang === 'en') {
+        alert('Please fill in at least the name, city, and description.');
+      } else {
+        alert('Veuillez remplir au moins le nom, la ville et la description.');
+      }
       return;
     }
 
@@ -111,15 +122,19 @@ export default function SheetSimulator({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="font-display font-semibold text-slate-800 text-base sm:text-lg">
-                  Simulateur de Base de Données (Style Google Sheets)
+                  {currentLang === 'en' 
+                    ? 'Database Simulator (Google Sheets Style)' 
+                    : 'Simulateur de Base de Données (Style Google Sheets)'}
                 </h3>
                 <span className="bg-sky-100 text-sky-800 text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-sky-500 rounded-full animate-ping"></span>
-                  Synchro en direct
+                  {currentLang === 'en' ? 'Live sync' : 'Synchro en direct'}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                Simulez la modification en temps réel des logements comme si vous utilisiez un Google Sheets connecté.
+                {currentLang === 'en'
+                  ? 'Simulate real-time editing of accommodations as if using a connected Google Sheets spreadsheet.'
+                  : 'Simulez la modification en temps réel des logements comme si vous utilisiez un Google Sheets connecté.'}
               </p>
             </div>
           </div>
@@ -127,23 +142,25 @@ export default function SheetSimulator({
             <button
               id="reset-database-btn"
               onClick={onReset}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors"
-              title="Réinitialiser les données par défaut"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              title={currentLang === 'en' ? 'Reset to default data' : 'Réinitialiser les données par défaut'}
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Réinitialiser
+              {currentLang === 'en' ? 'Reset' : 'Réinitialiser'}
             </button>
             <button
               id="toggle-simulator-btn"
               onClick={() => setIsOpen(!isOpen)}
-              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 isOpen
                   ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/10'
                   : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-200'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              {isOpen ? 'Masquer la table' : 'Afficher la table Google Sheets'}
+              {isOpen 
+                ? (currentLang === 'en' ? 'Hide Table' : 'Masquer la table') 
+                : (currentLang === 'en' ? 'Show Google Sheets Table' : 'Afficher la table Google Sheets')}
             </button>
           </div>
         </div>
@@ -158,17 +175,17 @@ export default function SheetSimulator({
                   Document ID: 1_MadaHotesSheetsSimulated2026
                 </span>
                 <span className="text-xs text-slate-500 font-semibold">
-                  • {accommodations.length} lignes trouvées
+                  • {accommodations.length} {currentLang === 'en' ? 'rows found' : 'lignes trouvées'}
                 </span>
               </div>
               {!isAdding && !editingId && (
                 <button
                   id="add-sheet-row-btn"
                   onClick={handleStartAdd}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-500/10 transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-500/10 transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Insérer un nouveau logement
+                  {currentLang === 'en' ? 'Insert new accommodation' : 'Insérer un nouveau logement'}
                 </button>
               )}
             </div>
@@ -177,11 +194,15 @@ export default function SheetSimulator({
             {(isAdding || editingId) && (
               <div className="bg-orange-50/30 p-5 border-b border-orange-100 animate-fadeIn">
                 <h4 className="text-sm font-bold text-orange-600 font-display uppercase tracking-wider mb-4">
-                  {isAdding ? '➕ Ajouter une ligne au Google Sheet' : '✏️ Modifier la ligne du Google Sheet'}
+                  {isAdding 
+                    ? (currentLang === 'en' ? '➕ Add row to Google Sheet' : '➕ Ajouter une ligne au Google Sheet') 
+                    : (currentLang === 'en' ? '✏️ Edit row in Google Sheet' : '✏️ Modifier la ligne du Google Sheet')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Nom du Logement</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Accommodation Name' : 'Nom du Logement'}
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -191,18 +212,22 @@ export default function SheetSimulator({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Type de Logement</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Type of Lodging' : 'Type de Logement'}
+                    </label>
                     <select
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                     >
-                      <option value="Chambre d'hôte">Chambre d'hôte</option>
-                      <option value="Gîte d'étape">Gîte d'étape</option>
+                      <option value="Chambre d'hôte">{currentLang === 'en' ? 'Bed & Breakfast' : "Chambre d'hôte"}</option>
+                      <option value="Gîte d'étape">{currentLang === 'en' ? 'Stopover Gite' : "Gîte d'étape"}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Ville</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'City' : 'Ville'}
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -213,7 +238,9 @@ export default function SheetSimulator({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Région (Province)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Region (Province)' : 'Région (Province)'}
+                    </label>
                     <select
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
                       value={formData.region}
@@ -225,7 +252,9 @@ export default function SheetSimulator({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Prix en Ariary (MGA)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Price in Ariary (MGA)' : 'Prix en Ariary (MGA)'}
+                    </label>
                     <input
                       type="number"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -242,7 +271,9 @@ export default function SheetSimulator({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Prix en Euro (€)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Price in Euro (€)' : 'Prix en Euro (€)'}
+                    </label>
                     <input
                       type="number"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -260,7 +291,9 @@ export default function SheetSimulator({
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 mb-1">URL Photo de couverture</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Cover Photo URL' : 'URL Photo de couverture'}
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -270,7 +303,9 @@ export default function SheetSimulator({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Capacité (personnes/lits)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Capacity' : 'Capacité (personnes/lits)'}
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -281,28 +316,34 @@ export default function SheetSimulator({
                   </div>
 
                   <div className="md:col-span-3">
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Description Détaillée</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Detailed Description' : 'Description Détaillée'}
+                    </label>
                     <textarea
                       rows={2}
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none text-slate-800"
                       value={formData.description || ''}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Décrivez l'endroit, le charme, l'accueil, les activités..."
+                      placeholder={currentLang === 'en' ? 'Describe the charm, the hospitality, activities...' : "Décrivez l'endroit, le charme, l'accueil, les activités..."}
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Précisions de localisation</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Location details & access' : 'Précisions de localisation'}
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
                       value={formData.locationDetails || ''}
                       onChange={(e) => setFormData({ ...formData, locationDetails: e.target.value })}
-                      placeholder="Ex: À 10min à pied de la gare des pousse-pousse..."
+                      placeholder="Ex: À 10min à pied de la plage..."
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">WhatsApp du Propriétaire (format int.)</label>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Owner WhatsApp (intl. format)' : 'WhatsApp du Propriétaire (format int.)'}
+                    </label>
                     <input
                       type="text"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
@@ -313,7 +354,9 @@ export default function SheetSimulator({
                   </div>
 
                   <div className="md:col-span-3">
-                    <span className="block text-xs font-bold text-slate-500 mb-2">Équipements & Services (Cochez)</span>
+                    <span className="block text-xs font-bold text-slate-500 mb-2">
+                      {currentLang === 'en' ? 'Amenities & Services (Check)' : 'Équipements & Services (Cochez)'}
+                    </span>
                     <div className="flex flex-wrap gap-2">
                       {ALL_AMENITIES_OPTIONS.map((amenity) => {
                         const checked = (formData.amenities || []).includes(amenity);
@@ -322,7 +365,7 @@ export default function SheetSimulator({
                             key={amenity}
                             type="button"
                             onClick={() => handleToggleAmenity(amenity)}
-                            className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 border ${
+                            className={`px-3 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1 border cursor-pointer ${
                               checked
                                 ? 'bg-orange-500 text-white border-orange-500 font-bold shadow-sm'
                                 : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -336,6 +379,36 @@ export default function SheetSimulator({
                     </div>
                   </div>
 
+                  {/* NIF */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'NIF Number [col J]' : 'Numéro NIF [col J]'}
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800 font-mono font-bold"
+                      value={formData.nifNumber || ''}
+                      onChange={(e) => setFormData({ ...formData, nifNumber: e.target.value })}
+                      placeholder="Ex: 3001245678"
+                      maxLength={10}
+                    />
+                  </div>
+
+                  {/* STAT Card */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-500 mb-1">
+                      {currentLang === 'en' ? 'Statistical Card [col K]' : 'Carte Statistique [col K]'}
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800 font-mono font-bold"
+                      value={formData.statCardNumber || ''}
+                      onChange={(e) => setFormData({ ...formData, statCardNumber: e.target.value })}
+                      placeholder="Ex: 12345 12 1234 1 12345"
+                      maxLength={21}
+                    />
+                  </div>
+
                   <div className="md:col-span-3">
                     <label className="inline-flex items-center gap-2 cursor-pointer mt-1">
                       <input
@@ -344,7 +417,9 @@ export default function SheetSimulator({
                         onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                         className="rounded text-orange-600 focus:ring-orange-500 w-4 h-4"
                       />
-                      <span className="text-xs font-bold text-slate-600">Mettre en vedette (Affiché en haut du site)</span>
+                      <span className="text-xs font-bold text-slate-600">
+                        {currentLang === 'en' ? 'Featured accommodation (Displayed at the top)' : 'Mettre en vedette (Affiché en haut du site)'}
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -356,18 +431,18 @@ export default function SheetSimulator({
                       setIsAdding(false);
                       setEditingId(null);
                     }}
-                    className="flex items-center gap-1 px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300 transition-colors"
+                    className="flex items-center gap-1 px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300 transition-colors cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
-                    Annuler
+                    {currentLang === 'en' ? 'Cancel' : 'Annuler'}
                   </button>
                   <button
                     type="button"
                     onClick={handleSave}
-                    className="flex items-center gap-1 px-5 py-2 bg-orange-500 text-white text-xs font-bold rounded-xl hover:bg-orange-600 shadow-md transition-colors"
+                    className="flex items-center gap-1 px-5 py-2 bg-orange-500 text-white text-xs font-bold rounded-xl hover:bg-orange-600 shadow-md transition-colors cursor-pointer"
                   >
                     <Check className="w-3.5 h-3.5" />
-                    Enregistrer dans la base
+                    {currentLang === 'en' ? 'Save to Base' : 'Enregistrer dans la base'}
                   </button>
                 </div>
               </div>
@@ -379,14 +454,29 @@ export default function SheetSimulator({
                 <thead>
                   <tr className="bg-slate-200/80 border-b border-orange-100 text-slate-700">
                     <th className="p-2 border-r border-slate-200 text-center w-10">#</th>
-                    <th className="p-2 border-r border-slate-200 min-w-[120px]">Nom [col A]</th>
-                    <th className="p-2 border-r border-slate-200 min-w-[90px]">Type [col B]</th>
-                    <th className="p-2 border-r border-slate-200 min-w-[90px]">Ville [col C]</th>
-                    <th className="p-2 border-r border-slate-200 min-w-[80px]">Région [col D]</th>
-                    <th className="p-2 border-r border-slate-200 text-right min-w-[90px]">Ariary [col E]</th>
-                    <th className="p-2 border-r border-slate-200 text-right min-w-[70px]">Euro [col F]</th>
+                    <th className="p-2 border-r border-slate-200 min-w-[120px]">
+                      {currentLang === 'en' ? 'Name [col A]' : 'Nom [col A]'}
+                    </th>
+                    <th className="p-2 border-r border-slate-200 min-w-[90px]">
+                      {currentLang === 'en' ? 'Type [col B]' : 'Type [col B]'}
+                    </th>
+                    <th className="p-2 border-r border-slate-200 min-w-[90px]">
+                      {currentLang === 'en' ? 'City [col C]' : 'Ville [col C]'}
+                    </th>
+                    <th className="p-2 border-r border-slate-200 min-w-[80px]">
+                      {currentLang === 'en' ? 'Region [col D]' : 'Région [col D]'}
+                    </th>
+                    <th className="p-2 border-r border-slate-200 text-right min-w-[90px]">
+                      {currentLang === 'en' ? 'Ariary [col E]' : 'Ariary [col E]'}
+                    </th>
+                    <th className="p-2 border-r border-slate-200 text-right min-w-[70px]">
+                      {currentLang === 'en' ? 'Euro [col F]' : 'Euro [col F]'}
+                    </th>
                     <th className="p-2 border-r border-slate-200 min-w-[100px]">WhatsApp [col G]</th>
                     <th className="p-2 border-r border-slate-200 min-w-[150px]">Description [col H]</th>
+                    <th className="p-2 border-r border-slate-200 text-center min-w-[90px]">Status [col I]</th>
+                    <th className="p-2 border-r border-slate-200 min-w-[100px]">NIF [col J]</th>
+                    <th className="p-2 border-r border-slate-200 min-w-[130px]">STAT [col K]</th>
                     <th className="p-2 text-center min-w-[80px]">Actions</th>
                   </tr>
                 </thead>
@@ -409,7 +499,9 @@ export default function SheetSimulator({
                           </span>
                         )}
                       </td>
-                      <td className="p-2 border-r border-slate-200 text-slate-600">{item.type}</td>
+                      <td className="p-2 border-r border-slate-200 text-slate-600">
+                        {item.type === "Chambre d'hôte" && currentLang === 'en' ? 'Bed & Breakfast' : item.type === "Gîte d'étape" && currentLang === 'en' ? 'Stopover Gite' : item.type}
+                      </td>
                       <td className="p-2 border-r border-slate-200 text-slate-600">{item.city}</td>
                       <td className="p-2 border-r border-slate-200 text-slate-600">{item.region}</td>
                       <td className="p-2 border-r border-slate-200 text-right text-slate-800 font-bold">
@@ -422,22 +514,53 @@ export default function SheetSimulator({
                       <td className="p-2 border-r border-slate-200 text-slate-500 truncate max-w-[180px] font-sans" title={item.description}>
                         {item.description}
                       </td>
+                      
+                      {/* Status Column */}
+                      <td className="p-2 border-r border-slate-200 text-center font-sans font-semibold">
+                        {(() => {
+                          const isExpired = item.expiresAt ? new Date(item.expiresAt) < new Date() : false;
+                          const currentStatus = isExpired ? 'expired' : (item.status || 'approved');
+                          if (currentStatus === 'pending') {
+                            return <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded font-bold uppercase tracking-wider animate-pulse">En attente</span>;
+                          } else if (currentStatus === 'approved') {
+                            return <span className="text-[10px] px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold uppercase tracking-wider">Approuvé</span>;
+                          } else if (currentStatus === 'rejected') {
+                            return <span className="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-800 rounded font-bold uppercase tracking-wider">Rejeté</span>;
+                          } else {
+                            return <span className="text-[10px] px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded font-bold uppercase tracking-wider">Expiré</span>;
+                          }
+                        })()}
+                      </td>
+
+                      {/* NIF Column */}
+                      <td className="p-2 border-r border-slate-200 text-slate-600 font-mono">
+                        {item.nifNumber || <span className="text-red-400 italic font-sans font-bold">Manquant</span>}
+                      </td>
+
+                      {/* STAT Column */}
+                      <td className="p-2 border-r border-slate-200 text-slate-600 font-mono">
+                        {item.statCardNumber || <span className="text-red-400 italic font-sans font-bold">Manquant</span>}
+                      </td>
+
                       <td className="p-2 flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => handleStartEdit(item)}
-                          className="p-1 bg-slate-100 hover:bg-orange-100 hover:text-orange-800 text-slate-600 rounded transition-colors"
-                          title="Modifier la ligne"
+                          className="p-1 bg-slate-100 hover:bg-orange-100 hover:text-orange-800 text-slate-600 rounded transition-colors cursor-pointer"
+                          title={currentLang === 'en' ? 'Edit row' : 'Modifier la ligne'}
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => {
-                            if (confirm(`Supprimer ${item.name} de la table ?`)) {
+                            const confirmText = currentLang === 'en' 
+                              ? `Delete ${item.name} from the sheet?` 
+                              : `Supprimer ${item.name} de la table ?`;
+                            if (confirm(confirmText)) {
                               onDelete(item.id);
                             }
                           }}
-                          className="p-1 bg-slate-100 hover:bg-red-100 hover:text-red-700 text-slate-600 rounded transition-colors"
-                          title="Supprimer la ligne"
+                          className="p-1 bg-slate-100 hover:bg-red-100 hover:text-red-700 text-slate-600 rounded transition-colors cursor-pointer"
+                          title={currentLang === 'en' ? 'Delete row' : 'Supprimer la ligne'}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -452,7 +575,15 @@ export default function SheetSimulator({
             <div className="bg-slate-100 border-t border-orange-100 p-3 text-[10px] text-slate-500 flex items-center gap-2 font-sans">
               <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
               <span>
-                <strong>Note technique :</strong> Cette table simule une lecture et écriture bidirectionnelle via l'API Google Sheets. En production réelle, un script Node.js lit directement un Google Sheet public ou privé, et l'application utilise une mise en cache CDN pour garantir un temps de chargement ultra-rapide à Madagascar, même en connexion 3G/4G lente.
+                {currentLang === 'en' ? (
+                  <>
+                    <strong>Technical Note:</strong> This table simulates real-time bi-directional read/write syncing via Google Sheets API. In true production, a Node.js worker polls the spreadsheet and writes back, leveraging an edge CDN cache to secure sub-second page rendering for mobile travelers on slow 3G/4G networks across Madagascar.
+                  </>
+                ) : (
+                  <>
+                    <strong>Note technique :</strong> Cette table simule une lecture et écriture bidirectionnelle via l'API Google Sheets. En production réelle, un script Node.js lit directement un Google Sheet public ou privé, et l'application utilise une mise en cache CDN pour garantir un temps de chargement ultra-rapide à Madagascar, même en connexion 3G/4G lente.
+                  </>
+                )}
               </span>
             </div>
           </div>
@@ -461,4 +592,3 @@ export default function SheetSimulator({
     </div>
   );
 }
-

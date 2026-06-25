@@ -7,9 +7,10 @@ interface OwnerRegistrationProps {
   isOpen: boolean;
   onClose: () => void;
   onAddAccommodation: (item: Accommodation) => void;
+  currentLang: "fr" | "en";
 }
 
-export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation }: OwnerRegistrationProps) {
+export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation, currentLang }: OwnerRegistrationProps) {
   if (!isOpen) return null;
   // Form State
   const [name, setName] = useState('');
@@ -25,6 +26,25 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [photoBase64, setPhotoBase64] = useState<string>('');
   const [isFeatured, setIsFeatured] = useState(false);
+  const [statCardNumber, setStatCardNumber] = useState('');
+  const [nifNumber, setNifNumber] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // Helper Formatters
+  const formatStatCard = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    let formatted = '';
+    if (digits.length > 0) formatted += digits.substring(0, 5);
+    if (digits.length > 5) formatted += ' ' + digits.substring(5, 7);
+    if (digits.length > 7) formatted += ' ' + digits.substring(7, 11);
+    if (digits.length > 11) formatted += ' ' + digits.substring(11, 12);
+    if (digits.length > 12) formatted += ' ' + digits.substring(12, 17);
+    return formatted.trim();
+  };
+
+  const formatNif = (value: string) => {
+    return value.replace(/\D/g, '').substring(0, 10);
+  };
 
   // Status States
   const [isDragActive, setIsDragActive] = useState(false);
@@ -58,7 +78,11 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
   // Process and downscale image to keep base64 size compact for localStorage
   const processImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Veuillez sélectionner uniquement des images (PNG, JPG, WEBP).');
+      if (currentLang === 'en') {
+        alert('Please select only image files (PNG, JPG, WEBP).');
+      } else {
+        alert('Veuillez sélectionner uniquement des images (PNG, JPG, WEBP).');
+      }
       return;
     }
 
@@ -150,13 +174,54 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
     e.preventDefault();
     const newErrors: { [key: string]: string } = {};
 
-    if (!name.trim()) newErrors.name = "Le nom de l'hébergement est requis.";
-    if (!city.trim()) newErrors.city = "La ville est requise.";
-    if (!priceAriary) newErrors.priceAriary = "Le tarif en Ariary est requis.";
-    if (!capacity.trim()) newErrors.capacity = "La capacité (ex: 2 personnes) est requise.";
-    if (!whatsappNumber.trim()) newErrors.whatsappNumber = "Le numéro WhatsApp est requis.";
-    if (!description.trim()) newErrors.description = "Une description est requise.";
-    if (!photoBase64) newErrors.photo = "Une photo de vos locaux est requise.";
+    const statRegex = /^\d{5} \d{2} \d{4} \d \d{5}$/;
+    const nifRegex = /^\d{10}$/;
+
+    if (currentLang === 'en') {
+      if (!name.trim()) newErrors.name = "The accommodation name is required.";
+      if (!city.trim()) newErrors.city = "The city is required.";
+      if (!priceAriary) newErrors.priceAriary = "The rate in Ariary is required.";
+      if (!capacity.trim()) newErrors.capacity = "The capacity (e.g., 2 people) is required.";
+      if (!whatsappNumber.trim()) newErrors.whatsappNumber = "The WhatsApp number is required.";
+      if (!description.trim()) newErrors.description = "A description is required.";
+      if (!photoBase64) newErrors.photo = "A photo of your premises is required.";
+      
+      if (!statCardNumber.trim()) {
+        newErrors.statCardNumber = "Statistical card number is required.";
+      } else if (!statRegex.test(statCardNumber.trim())) {
+        newErrors.statCardNumber = "Format must be XXXXX XX XXXX X XXXXX.";
+      }
+      if (!nifNumber.trim()) {
+        newErrors.nifNumber = "NIF number is required.";
+      } else if (!nifRegex.test(nifNumber.trim())) {
+        newErrors.nifNumber = "NIF must be exactly 10 digits.";
+      }
+      if (!acceptedTerms) {
+        newErrors.acceptedTerms = "You must accept the Digital Terms of Use.";
+      }
+    } else {
+      if (!name.trim()) newErrors.name = "Le nom de l'hébergement est requis.";
+      if (!city.trim()) newErrors.city = "La ville est requise.";
+      if (!priceAriary) newErrors.priceAriary = "Le tarif en Ariary est requis.";
+      if (!capacity.trim()) newErrors.capacity = "La capacité (ex: 2 personnes) est requise.";
+      if (!whatsappNumber.trim()) newErrors.whatsappNumber = "Le numéro WhatsApp est requis.";
+      if (!description.trim()) newErrors.description = "Une description est requise.";
+      if (!photoBase64) newErrors.photo = "Une photo de vos locaux est requise.";
+      
+      if (!statCardNumber.trim()) {
+        newErrors.statCardNumber = "Le numéro de carte statistique est requis.";
+      } else if (!statRegex.test(statCardNumber.trim())) {
+        newErrors.statCardNumber = "Le format doit être XXXXX XX XXXX X XXXXX.";
+      }
+      if (!nifNumber.trim()) {
+        newErrors.nifNumber = "Le numéro NIF est requis.";
+      } else if (!nifRegex.test(nifNumber.trim())) {
+        newErrors.nifNumber = "Le NIF doit comporter exactement 10 chiffres.";
+      }
+      if (!acceptedTerms) {
+        newErrors.acceptedTerms = "Vous devez accepter les conditions numériques d'utilisation.";
+      }
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -190,8 +255,14 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
       amenities: selectedAmenities.length > 0 ? selectedAmenities : ['Moustiquaire', 'Eau chaude'],
       whatsappNumber,
       capacity,
-      locationDetails: locationDetails || `Situé à ${city}`,
-      isFeatured: isFeatured
+      locationDetails: locationDetails || (currentLang === 'en' ? `Located at ${city}` : `Situé à ${city}`),
+      isFeatured: isFeatured,
+      statCardNumber: statCardNumber.trim(),
+      nifNumber: nifNumber.trim(),
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'pending', // Pending approval by Admin
+      hasAcceptedTerms: true
     };
 
     onAddAccommodation(newAccommodation);
@@ -211,8 +282,11 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
     setSelectedAmenities([]);
     setPhotoBase64('');
     setIsFeatured(false);
+    setStatCardNumber('');
+    setNifNumber('');
+    setAcceptedTerms(false);
 
-    // Auto close success message after 8 seconds
+    // Auto close success message after 10 seconds
     setTimeout(() => {
       setSuccessMessage(false);
     }, 10000);
@@ -230,15 +304,17 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-orange-500/10 border border-orange-500/20 text-orange-600 text-[10px] font-bold rounded-full uppercase tracking-wider">
               <Sparkles className="w-3 h-3 animate-pulse" />
-              Espace Propriétaires
+              {currentLang === 'en' ? "Owners' Space" : "Espace Propriétaires"}
             </span>
-            <h2 className="text-lg sm:text-xl font-display font-semibold text-slate-900">Inscrire mon Hébergement</h2>
+            <h2 className="text-lg sm:text-xl font-display font-semibold text-slate-900">
+              {currentLang === 'en' ? "Register My Accommodation" : "Inscrire mon Hébergement"}
+            </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-xl transition-colors"
-            title="Fermer"
+            className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-xl transition-colors cursor-pointer"
+            title={currentLang === 'en' ? "Close" : "Fermer"}
           >
             <X className="w-5 h-5" />
           </button>
@@ -253,10 +329,14 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
           {/* Section Introduction */}
           <div className="text-center max-w-xl mx-auto pb-4">
             <h3 className="text-2xl font-display font-semibold text-slate-900 tracking-tight">
-              Rejoignez gratuitement notre catalogue de tourisme solidaire
+              {currentLang === 'en' 
+                ? "Join our solidarity tourism catalog for free" 
+                : "Rejoignez gratuitement notre catalogue de tourisme solidaire"}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-2">
-              Bénéficiez de réservations en direct sur votre WhatsApp, sans intermédiaire ni aucune commission prélevée sur vos revenus.
+            <p className="text-xs sm:text-sm text-slate-500 mt-2 font-sans">
+              {currentLang === 'en'
+                ? "Receive direct bookings on your WhatsApp, without any middleman or commission fees deducted from your earnings."
+                : "Bénéficiez de réservations en direct sur votre WhatsApp, sans intermédiaire ni aucune commission prélevée sur vos revenus."}
             </p>
           </div>
 
@@ -266,30 +346,33 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
               <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-emerald-500/20">
                 <Check className="w-8 h-8" />
               </div>
-              <div className="text-center md:text-left flex-1">
-                <h3 className="font-display font-bold text-slate-900 text-lg">Votre hébergement a été enregistré avec succès !</h3>
+              <div className="text-center md:text-left flex-1 font-sans">
+                <h3 className="font-display font-bold text-slate-900 text-lg">
+                  {currentLang === 'en' ? "Your listing was submitted for review!" : "Votre demande d'inscription a été soumise !"}
+                </h3>
                 <p className="text-sm text-slate-600 mt-1">
-                  Félicitations ! Votre gîte/chambre d'hôte est maintenant visible dans notre catalogue général. Il a également été automatiquement synchronisé avec notre simulateur Google Sheets interactif ci-dessous.
+                  {currentLang === 'en'
+                    ? "Congratulations! Your lodging has been registered as PENDING. To comply with Madagascar regulations, an Admin must approve your Statistical Card and NIF. You can view or approve it right now in the Admin Dashboard or the Google Sheets spreadsheet simulator below."
+                    : "Félicitations ! Votre hébergement a été enregistré avec le statut EN ATTENTE. Conformément aux réglementations de Madagascar, un administrateur doit valider votre Carte Statistique et votre NIF. Vous pouvez le visualiser et l'approuver dès maintenant dans le Tableau de Bord Administrateur ou dans le simulateur Google Sheets ci-dessous."}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 justify-center md:justify-start">
                   <button
                     type="button"
                     onClick={() => {
                       onClose();
-                      // Smooth scroll to catalog
-                      const cat = document.getElementById('catalog-section');
-                      if (cat) cat.scrollIntoView({ behavior: 'smooth' });
+                      const sheets = document.getElementById('sheets-simulator-section');
+                      if (sheets) sheets.scrollIntoView({ behavior: 'smooth' });
                     }}
-                    className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all shadow"
+                    className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-all shadow cursor-pointer"
                   >
-                    Voir dans le catalogue
+                    {currentLang === 'en' ? "Moderate in Sheets Simulator" : "Modérer dans le Simulateur"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setSuccessMessage(false)}
-                    className="px-4 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-xs rounded-xl transition-all"
+                    className="px-4 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-xs rounded-xl transition-all cursor-pointer"
                   >
-                    Fermer
+                    {currentLang === 'en' ? "Close" : "Fermer"}
                   </button>
                 </div>
               </div>
@@ -300,15 +383,19 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
           <div>
             <h3 className="text-lg font-bold text-slate-800 font-display flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold">1</span>
-              Informations Générales
+              {currentLang === 'en' ? "General Information" : "Informations Générales"}
             </h3>
-            <p className="text-xs text-slate-400 mt-1 pl-9">Présentez l'essentiel de votre logement aux voyageurs.</p>
+            <p className="text-xs text-slate-400 mt-1 pl-9">
+              {currentLang === 'en' ? "Present the essentials of your lodging to travelers." : "Présentez l'essentiel de votre logement aux voyageurs."}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-0 sm:pl-9">
             {/* Accommodation Name */}
             <div className="space-y-1.5" id="err-name">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Nom de l'hébergement <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Accommodation Name" : "Nom de l'hébergement"} <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={name}
@@ -321,36 +408,40 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
             {/* Type Selection */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Type de logement <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Type of Accommodation" : "Type de logement"} <span className="text-red-500">*</span>
+              </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setType("Chambre d'hôte")}
-                  className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all text-center ${
+                  className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all text-center cursor-pointer ${
                     type === "Chambre d'hôte"
                       ? 'bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/10'
                       : 'bg-slate-50 text-slate-600 border-orange-50 hover:bg-slate-100'
                   }`}
                 >
-                  Chambre d'hôte
+                  {currentLang === 'en' ? "Bed & Breakfast" : "Chambre d'hôte"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setType("Gîte d'étape")}
-                  className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all text-center ${
+                  className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all text-center cursor-pointer ${
                     type === "Gîte d'étape"
                       ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/10'
                       : 'bg-slate-50 text-slate-600 border-orange-50 hover:bg-slate-100'
                   }`}
                 >
-                  Gîte d'étape
+                  {currentLang === 'en' ? "Stopover Gite" : "Gîte d'étape"}
                 </button>
               </div>
             </div>
 
             {/* City */}
             <div className="space-y-1.5" id="err-city">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Ville / Village <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "City / Village" : "Ville / Village"} <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={city}
@@ -363,7 +454,9 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
             {/* Region Select */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Province / Région <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Province / Region" : "Province / Région"} <span className="text-red-500">*</span>
+              </label>
               <select
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
@@ -377,7 +470,9 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
             {/* Capacity */}
             <div className="space-y-1.5" id="err-capacity">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Capacité d'accueil <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Guest Capacity" : "Capacité d'accueil"} <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={capacity}
@@ -390,7 +485,9 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
             {/* Precise Location Details */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Précisions de localisation (Accès)</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Location details & access" : "Précisions de localisation (Accès)"}
+              </label>
               <input
                 type="text"
                 value={locationDetails}
@@ -405,15 +502,21 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
           <div className="pt-4 border-t border-slate-100">
             <h3 className="text-lg font-bold text-slate-800 font-display flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold">2</span>
-              Tarifs, Services & Contacts
+              {currentLang === 'en' ? "Rates, Services & Contacts" : "Tarifs, Services & Contacts"}
             </h3>
-            <p className="text-xs text-slate-400 mt-1 pl-9">Combien coûte la nuitée et comment vous contacter directement.</p>
+            <p className="text-xs text-slate-400 mt-1 pl-9">
+              {currentLang === 'en' 
+                ? "Specify nightly rates and how guests can contact you directly." 
+                : "Combien coûte la nuitée et comment vous contacter directement."}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-0 sm:pl-9">
             {/* Price in Ariary */}
             <div className="space-y-1.5" id="err-priceAriary">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Tarif par nuit en Ariary (MGA) <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Price per night in Ariary (MGA)" : "Tarif par nuit en Ariary (MGA)"} <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <input
                   type="number"
@@ -429,7 +532,9 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
             {/* Price in Euro */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Conversion estimée en Euro (€)</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Estimated Conversion in Euro (€)" : "Conversion estimée en Euro (€)"}
+              </label>
               <div className="relative">
                 <input
                   type="number"
@@ -440,12 +545,18 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
                 />
                 <span className="absolute right-4 top-3 text-xs font-bold text-slate-400">€</span>
               </div>
-              <p className="text-[10px] text-slate-400 italic">Auto-calculé au taux indicatif de Madagascar (~1€ = 4500 Ar).</p>
+              <p className="text-[10px] text-slate-400 italic">
+                {currentLang === 'en'
+                  ? "Auto-calculated at typical exchange rate of Madagascar (~1€ = 4500 Ar)."
+                  : "Auto-calculé au taux indicatif de Madagascar (~1€ = 4500 Ar)."}
+              </p>
             </div>
 
             {/* WhatsApp Number */}
             <div className="space-y-1.5" id="err-whatsappNumber">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Numéro WhatsApp direct <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Direct WhatsApp Number" : "Numéro WhatsApp direct"} <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <Phone className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
                 <input
@@ -456,13 +567,19 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
                   className={`w-full bg-slate-50 border ${errors.whatsappNumber ? 'border-red-400 focus:ring-red-500' : 'border-orange-50 focus:ring-orange-500'} rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all text-slate-800 placeholder-slate-400 font-mono font-bold`}
                 />
               </div>
-              <p className="text-[10px] text-slate-400 italic">Incluez l'indicatif pays de Madagascar (+261) sans espace pour permettre le chat instantané.</p>
+              <p className="text-[10px] text-slate-400 italic">
+                {currentLang === 'en'
+                  ? "Include the country code (+261) without spaces to enable instant bookings chat."
+                  : "Incluez l'indicatif pays de Madagascar (+261) sans espace pour permettre le chat instantané."}
+              </p>
               {errors.whatsappNumber && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.whatsappNumber}</p>}
             </div>
 
             {/* Is Featured Toggle */}
             <div className="space-y-1.5 flex flex-col justify-center">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Visibilité premium</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                {currentLang === 'en' ? "Premium visibility" : "Visibilité premium"}
+              </label>
               <label className="flex items-center gap-3 p-3 bg-orange-50/40 hover:bg-orange-50/80 border border-orange-100 rounded-2xl cursor-pointer transition-all">
                 <input
                   type="checkbox"
@@ -471,15 +588,23 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
                   className="rounded text-orange-500 focus:ring-orange-500 w-5 h-5 cursor-pointer accent-orange-500"
                 />
                 <div>
-                  <span className="text-xs font-bold text-slate-700 block">Afficher en Coup de Cœur ★</span>
-                  <span className="text-[10px] text-slate-400">Positionne votre gîte dans le bandeau de recommandation en haut.</span>
+                  <span className="text-xs font-bold text-slate-700 block">
+                    {currentLang === 'en' ? "Display as Favorite ★" : "Afficher en Coup de Cœur ★"}
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    {currentLang === 'en' 
+                      ? "Positions your lodge in the premium recommendations slider at the top." 
+                      : "Positionne votre gîte dans le bandeau de recommandation en haut."}
+                  </span>
                 </div>
               </label>
             </div>
 
             {/* Amenities List */}
             <div className="md:col-span-2 space-y-2">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Équipements & Services disponibles</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Available Amenities & Services" : "Équipements & Services disponibles"}
+              </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
                 {ALL_AMENITIES_OPTIONS.map((amenity) => {
                   const checked = selectedAmenities.includes(amenity);
@@ -488,7 +613,7 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
                       key={amenity}
                       type="button"
                       onClick={() => handleToggleAmenity(amenity)}
-                      className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-left flex items-center gap-2 ${
+                      className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-left flex items-center gap-2 cursor-pointer ${
                         checked
                           ? 'bg-orange-50 border-orange-200 text-orange-700 shadow-sm font-bold'
                           : 'bg-slate-50 border-orange-50/40 text-slate-600 hover:bg-slate-100'
@@ -511,20 +636,28 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
           <div className="pt-4 border-t border-slate-100">
             <h3 className="text-lg font-bold text-slate-800 font-display flex items-center gap-2">
               <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold">3</span>
-              Médias & Description
+              {currentLang === 'en' ? "Media & Description" : "Médias & Description"}
             </h3>
-            <p className="text-xs text-slate-400 mt-1 pl-9">Attirez l'œil avec de superbes photos et une description chaleureuse.</p>
+            <p className="text-xs text-slate-400 mt-1 pl-9">
+              {currentLang === 'en' 
+                ? "Attract travelers' eyes with a gorgeous photo and a warm description." 
+                : "Attirez l'œil avec de superbes photos et une description chaleureuse."}
+            </p>
           </div>
 
           <div className="space-y-6 pl-0 sm:pl-9">
             {/* Description */}
             <div className="space-y-1.5" id="err-description">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Description de votre établissement <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Accommodation Description" : "Description de votre établissement"} <span className="text-red-500">*</span>
+              </label>
               <textarea
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Décrivez en quelques lignes l'accueil chaleureux, le cadre, les spécialités culinaires, la vue, le calme, les activités à proximité..."
+                placeholder={currentLang === 'en' 
+                  ? "Describe in a few sentences the warm welcome, setting, food specialities, local activities, tranquility..." 
+                  : "Décrivez en quelques lignes l'accueil chaleureux, le cadre, les spécialités culinaires, la vue, le calme, les activités à proximité..."}
                 className={`w-full bg-slate-50 border ${errors.description ? 'border-red-400 focus:ring-red-500' : 'border-orange-50 focus:ring-orange-500'} rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all text-slate-800 placeholder-slate-400 font-medium resize-none`}
               />
               {errors.description && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.description}</p>}
@@ -532,7 +665,9 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
             {/* Photo Upload Zone (Drag & Drop + Input Click) */}
             <div className="space-y-2" id="err-photo">
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">Photo de couverture <span className="text-red-500">*</span></label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Cover Photo" : "Photo de couverture"} <span className="text-red-500">*</span>
+              </label>
               
               {photoBase64 ? (
                 // Image Preview Card
@@ -546,10 +681,10 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
                     <button
                       type="button"
                       onClick={removePhoto}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5 hover:scale-105"
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-1.5 hover:scale-105 cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      Supprimer & Remplacer
+                      {currentLang === 'en' ? "Delete & Replace" : "Supprimer & Remplacer"}
                     </button>
                   </div>
                 </div>
@@ -578,20 +713,26 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
                   />
                   
                   {isProcessingImage ? (
-                    <div className="flex flex-col items-center py-4">
+                    <div className="flex flex-col items-center py-4 font-sans">
                       <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mb-2" />
-                      <span className="text-xs font-bold text-slate-600">Traitement et compression de l'image...</span>
+                      <span className="text-xs font-bold text-slate-600">
+                        {currentLang === 'en' ? "Processing and compressing image..." : "Traitement et compression de l'image..."}
+                      </span>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center py-4">
+                    <div className="flex flex-col items-center py-4 font-sans">
                       <div className="w-12 h-12 rounded-full bg-orange-100/80 text-orange-600 flex items-center justify-center mb-3">
                         <UploadCloud className="w-6 h-6" />
                       </div>
                       <span className="text-sm font-bold text-slate-800 block">
-                        Faites glisser votre photo ici, ou <span className="text-orange-500 underline">parcourez vos fichiers</span>
+                        {currentLang === 'en' 
+                          ? <>Drag and drop your photo here, or <span className="text-orange-500 underline">browse files</span></>
+                          : <>Faites glisser votre photo ici, ou <span className="text-orange-500 underline">parcourez vos fichiers</span></>}
                       </span>
                       <span className="text-xs text-slate-400 mt-1 block">
-                        Format PNG, JPG, WEBP • Idéal pour l'affichage : format Paysage
+                        {currentLang === 'en'
+                          ? "Format PNG, JPG, WEBP • Ideal orientation: Landscape"
+                          : "Format PNG, JPG, WEBP • Idéal pour l'affichage : format Paysage"}
                       </span>
                     </div>
                   )}
@@ -601,10 +742,109 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
             </div>
           </div>
 
+          {/* Step 4 Heading */}
+          <div className="pt-4 border-t border-slate-100">
+            <h3 className="text-lg font-bold text-slate-800 font-display flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-sm font-bold">4</span>
+              {currentLang === 'en' ? "Legal Compliance & Terms of Use" : "Conformité Légale & Conditions d'Utilisation"}
+            </h3>
+            <p className="text-xs text-slate-400 mt-1 pl-9">
+              {currentLang === 'en' 
+                ? "Enter your Madagascar corporate identifier numbers and accept our publication policy." 
+                : "Renseignez vos identifiants fiscaux malgaches et validez les conditions de publication."}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pl-0 sm:pl-9">
+            {/* Statistical Card Number */}
+            <div className="space-y-1.5" id="err-statCardNumber">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Statistical Card Number" : "Numéro carte statistique"} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={statCardNumber}
+                onChange={(e) => setStatCardNumber(formatStatCard(e.target.value))}
+                placeholder="Ex: 12345 12 1234 1 12345"
+                maxLength={21}
+                className={`w-full bg-slate-50 border ${errors.statCardNumber ? 'border-red-400 focus:ring-red-500' : 'border-orange-50 focus:ring-orange-500'} rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all text-slate-800 placeholder-slate-400 font-mono font-bold`}
+              />
+              <p className="text-[10px] text-slate-400 italic">
+                {currentLang === 'en' ? "Format: XXXXX XX XXXX X XXXXX" : "Format requis : XXXXX XX XXXX X XXXXX"}
+              </p>
+              {errors.statCardNumber && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.statCardNumber}</p>}
+            </div>
+
+            {/* NIF Number */}
+            <div className="space-y-1.5" id="err-nifNumber">
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                {currentLang === 'en' ? "Fiscal Identity Number (NIF)" : "Numéro d'Identité Fiscale (NIF)"} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={nifNumber}
+                onChange={(e) => setNifNumber(formatNif(e.target.value))}
+                placeholder="Ex: 3001245678"
+                maxLength={10}
+                className={`w-full bg-slate-50 border ${errors.nifNumber ? 'border-red-400 focus:ring-red-500' : 'border-orange-50 focus:ring-orange-500'} rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all text-slate-800 placeholder-slate-400 font-mono font-bold`}
+              />
+              <p className="text-[10px] text-slate-400 italic">
+                {currentLang === 'en' ? "Format: 10 digits" : "Format requis : 10 chiffres consécutifs"}
+              </p>
+              {errors.nifNumber && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.nifNumber}</p>}
+            </div>
+          </div>
+
+          {/* Digital Terms of Use Box */}
+          <div className="space-y-3 pl-0 sm:pl-9" id="err-acceptedTerms">
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+              {currentLang === 'en' ? "Digital Terms of Use Contract (MadaGîtes)" : "Conditions Numériques d'Utilisation (MadaGîtes)"} <span className="text-red-500">*</span>
+            </label>
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 max-h-48 overflow-y-auto text-xs text-slate-600 space-y-3 font-sans leading-relaxed shadow-inner">
+              {currentLang === 'en' ? (
+                <>
+                  <p className="font-bold text-slate-900">MADAG&Icirc;TES - DIGITAL TERMS OF USE (REGULATORY FRAMEWORK)</p>
+                  <p>1. <strong>Corporate Identification:</strong> To maintain list integrity and adhere to the regulations of local tourism authorities in Madagascar, any host listing a property on MadaG&icirc;tes must declare a valid Statistical Card Number (format: XXXXX XX XXXX X XXXXX) and a Fiscal Identity Number / NIF (format: 10 digits).</p>
+                  <p>2. <strong>Moderation &amp; Independent Approval:</strong> Every newly registered lodging is subject to a review process and will start in a &quot;Pending Approval&quot; state. An independent Administrator has exclusive rights to approve, filter, suspend, or permanently delete any listings that fail to provide correct regulatory credentials, or contain non-compliant materials (&quot;publication non r&eacute;glementaire&quot;).</p>
+                  <p>3. <strong>Strict Expiration Policy (1-Year Validity):</strong> Approved listings are granted a strict validity period of exactly one year (365 days) from the date of Administrator approval, date for date (&quot;validit&eacute; de 1 an date pour date&quot;). Upon reaching the expiration date, listings are automatically deactivated and must be renewed by submitting up-to-date fiscal details.</p>
+                  <p>4. <strong>Direct Relations Policy:</strong> MadaG&icirc;tes acts as a free solidarity directory, promoting sustainable direct commerce between travelers and local owners without commissions. Both parties must communicate in good faith via WhatsApp and resolve booking agreements directly.</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-slate-900">MADAG&Icirc;TES - CONTRAT DE CONDITIONS NUM&Eacute;RIQUES D'UTILISATION (R&Eacute;GULATION DES G&Icirc;TES)</p>
+                  <p>1. <strong>Identification Fiscale Obligatoire :</strong> Afin de garantir la transparence des services touristiques à Madagascar, tout propriétaire s'engage à renseigner un numéro de Carte Statistique valide (format : XXXXX XX XXXX X XXXXX) ainsi qu'un numéro d'Identité Fiscale / NIF valide (format : 10 chiffres consécutifs).</p>
+                  <p>2. <strong>Modération et Filtrage de Publication :</strong> Toute nouvelle inscription débute avec le statut &quot;En attente de validation&quot;. L'Administrateur de la plateforme dispose d'un pouvoir indépendant de filtrage permettant de valider ou de supprimer immédiatement toute publication non réglementaire ou frauduleuse.</p>
+                  <p>3. <strong>Durée de Validité de la Publication (1 an date pour date) :</strong> Conformément à la réglementation solidaire de MadaGîtes, chaque publication approuvée est valide pour une période stricte de 1 an (365 jours) de date à date à compter de son approbation. À l'échéance de cette période, la publication expire et est retirée du catalogue public jusqu'à sa prochaine validation réglementaire.</p>
+                  <p>4. <strong>Zéro Commission :</strong> La plateforme facilite une mise en relation directe via WhatsApp sans intermédiaire. Les hôtes restent seuls responsables du respect de la législation fiscale en vigueur à Madagascar quant à leurs revenus d'hébergement.</p>
+                </>
+              )}
+            </div>
+
+            <label className="flex items-start gap-3 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl cursor-pointer transition-all">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 rounded text-orange-500 focus:ring-orange-500 w-5 h-5 cursor-pointer accent-orange-500"
+              />
+              <div className="font-sans">
+                <span className="text-xs font-bold text-slate-700 block">
+                  {currentLang === 'en' ? "I accept the Digital Terms of Use & regulatory mandates" : "J'accepte les conditions numériques d'utilisation et mandats réglementaires"}
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">
+                  {currentLang === 'en' 
+                    ? "Certifies that the Statistical Card, NIF, and description details provided are 100% genuine." 
+                    : "Certifie que la Carte Statistique, le NIF et les détails fournis sont authentiques et conformes."}
+                </span>
+              </div>
+            </label>
+            {errors.acceptedTerms && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.acceptedTerms}</p>}
+          </div>
+
           <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 flex items-center gap-1.5 font-sans">
               <Check className="w-4 h-4 text-emerald-500 stroke-[3]" />
-              Inscription 100% Gratuite • Zéro Commission
+              {currentLang === 'en' ? "100% Free Listing • Zero Commissions" : "Inscription 100% Gratuite • Zéro Commission"}
             </span>
           </div>
 
@@ -612,25 +852,25 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation 
 
         {/* Fixed Footer Actions */}
         <div className="p-5 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
+          <span className="text-xs text-slate-500 flex items-center gap-1.5 font-sans font-medium">
             <Check className="w-4 h-4 text-emerald-500 stroke-[3]" />
-            Sans intermédiaire ni frais d'agence
+            {currentLang === 'en' ? "Direct relations and zero middleman fees" : "Sans intermédiaire ni frais d'agence"}
           </span>
           
           <div className="flex gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
-              className="w-1/2 sm:w-auto px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all"
+              className="w-1/2 sm:w-auto px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
             >
-              Annuler
+              {currentLang === 'en' ? "Cancel" : "Annuler"}
             </button>
             <button
               type="submit"
-              className="w-1/2 sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5"
+              className="w-1/2 sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 active:scale-98 text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Inscrire mon Hébergement
+              {currentLang === 'en' ? "Publish My Lodging" : "Inscrire mon Hébergement"}
             </button>
           </div>
         </div>
