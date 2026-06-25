@@ -8,9 +8,10 @@ interface OwnerRegistrationProps {
   onClose: () => void;
   onAddAccommodation: (item: Accommodation) => void;
   currentLang: "fr" | "en";
+  exchangeRate?: number;
 }
 
-export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation, currentLang }: OwnerRegistrationProps) {
+export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation, currentLang, exchangeRate = 4500 }: OwnerRegistrationProps) {
   if (!isOpen) return null;
   // Form State
   const [name, setName] = useState('');
@@ -18,7 +19,7 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
   const [city, setCity] = useState('');
   const [region, setRegion] = useState('Diana');
   const [priceAriary, setPriceAriary] = useState<number | ''>('');
-  const [priceEuro, setPriceEuro] = useState<number | ''>('');
+  const [priceUSD, setPriceUSD] = useState<number | ''>('');
   const [capacity, setCapacity] = useState('');
   const [description, setDescription] = useState('');
   const [locationDetails, setLocationDetails] = useState('');
@@ -54,22 +55,22 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-calculate Euro price if Ariary is updated (using ~4500 exchange rate)
+  // Auto-calculate USD price if Ariary is updated (using exchange rate)
   const handleAriaryChange = (val: string) => {
     const num = val === '' ? '' : Number(val);
     setPriceAriary(num);
     if (num !== '') {
-      setPriceEuro(Math.round(num / 4500));
+      setPriceUSD(Math.round(num / exchangeRate));
     } else {
-      setPriceEuro('');
+      setPriceUSD('');
     }
   };
 
-  const handleEuroChange = (val: string) => {
+  const handleUSDChange = (val: string) => {
     const num = val === '' ? '' : Number(val);
-    setPriceEuro(num);
+    setPriceUSD(num);
     if (num !== '') {
-      setPriceAriary(num * 4500);
+      setPriceAriary(num * exchangeRate);
     } else {
       setPriceAriary('');
     }
@@ -249,7 +250,7 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
       city,
       region,
       priceAriary: Number(priceAriary),
-      priceEuro: Number(priceEuro) || Math.round(Number(priceAriary) / 4500),
+      priceUSD: Number(priceUSD) || Math.round(Number(priceAriary) / exchangeRate),
       photo: defaultPhoto,
       description,
       amenities: selectedAmenities.length > 0 ? selectedAmenities : ['Moustiquaire', 'Eau chaude'],
@@ -274,7 +275,7 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
     setCity('');
     setRegion('Diana');
     setPriceAriary('');
-    setPriceEuro('');
+    setPriceUSD('');
     setCapacity('');
     setDescription('');
     setLocationDetails('');
@@ -530,25 +531,25 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
               {errors.priceAriary && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.priceAriary}</p>}
             </div>
 
-            {/* Price in Euro */}
+            {/* Price in USD */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                {currentLang === 'en' ? "Estimated Conversion in Euro (€)" : "Conversion estimée en Euro (€)"}
+                {currentLang === 'en' ? "Estimated Conversion in US Dollars ($)" : "Conversion estimée en Dollar US ($)"}
               </label>
               <div className="relative">
                 <input
                   type="number"
-                  value={priceEuro}
-                  onChange={(e) => handleEuroChange(e.target.value)}
+                  value={priceUSD}
+                  onChange={(e) => handleUSDChange(e.target.value)}
                   placeholder="Ex: 27"
                   className="w-full bg-slate-50 border border-orange-50 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all text-slate-800 placeholder-slate-400 font-mono font-bold"
                 />
-                <span className="absolute right-4 top-3 text-xs font-bold text-slate-400">€</span>
+                <span className="absolute right-4 top-3 text-xs font-bold text-slate-400">$</span>
               </div>
               <p className="text-[10px] text-slate-400 italic">
                 {currentLang === 'en'
-                  ? "Auto-calculated at typical exchange rate of Madagascar (~1€ = 4500 Ar)."
-                  : "Auto-calculé au taux indicatif de Madagascar (~1€ = 4500 Ar)."}
+                  ? `Auto-calculated at dynamic exchange rate of Madagascar (~1$ = ${exchangeRate} Ar).`
+                  : `Auto-calculé au taux dynamique de Madagascar (~1$ = ${exchangeRate} Ar).`}
               </p>
             </div>
 

@@ -7,9 +7,10 @@ interface DetailModalProps {
   item: Accommodation | null;
   onClose: () => void;
   currentLang: "fr" | "en";
+  exchangeRate?: number;
 }
 
-export default function DetailModal({ item, onClose, currentLang }: DetailModalProps) {
+export default function DetailModal({ item, onClose, currentLang, exchangeRate = 4500 }: DetailModalProps) {
   const titleId = useId();
   const t = (key: any) => getTranslation(key, currentLang);
 
@@ -99,9 +100,9 @@ export default function DetailModal({ item, onClose, currentLang }: DetailModalP
               </span>
             </div>
             <div>
-              <span className="block text-[10px] text-slate-400 uppercase font-bold tracking-widest">{t('euroMetric')}</span>
+              <span className="block text-[10px] text-slate-400 uppercase font-bold tracking-widest">{t('dollarMetric')}</span>
               <span className="text-orange-600 text-xs sm:text-sm font-bold flex items-center justify-center gap-0.5 mt-1 font-mono">
-                ~{item.priceEuro} €
+                ~{Math.round(item.priceAriary / exchangeRate)} $
               </span>
             </div>
           </div>

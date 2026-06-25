@@ -11,6 +11,8 @@ interface HeaderProps {
   currentLang: "fr" | "en";
   onLanguageChange: (lang: "fr" | "en") => void;
   onAdminClick: () => void;
+  exchangeRate?: number;
+  isRateLive?: boolean;
 }
 
 export default function Header({
@@ -21,7 +23,9 @@ export default function Header({
   onRegisterClick,
   currentLang,
   onLanguageChange,
-  onAdminClick
+  onAdminClick,
+  exchangeRate,
+  isRateLive
 }: HeaderProps) {
   const t = (key: any) => getTranslation(key, currentLang);
 
@@ -134,10 +138,26 @@ export default function Header({
 
         {/* Hero Body Content */}
         <div className="relative z-10 pt-12 pb-16 md:py-24 text-center max-w-3xl mx-auto">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50/10 border border-orange-500/30 text-orange-300 text-xs font-semibold rounded-full mb-6">
-            <MapPin className="w-3.5 h-3.5 animate-pulse" />
-            {t('heroBadge')}
-          </span>
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50/10 border border-orange-500/30 text-orange-300 text-xs font-semibold rounded-full">
+              <MapPin className="w-3.5 h-3.5 animate-pulse" />
+              {t('heroBadge')}
+            </span>
+            {exchangeRate && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold rounded-full">
+                <span className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${isRateLive ? 'animate-pulse' : ''}`}></span>
+                {currentLang === 'en'
+                  ? `Rate: 1$ = ${exchangeRate.toLocaleString()} Ar`
+                  : `Taux : 1$ = ${exchangeRate.toLocaleString()} Ar`
+                }
+                {isRateLive && (
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 rounded-md border border-emerald-500/30 font-sans font-normal ml-0.5">
+                    {currentLang === 'en' ? 'LIVE' : 'DIRECT'}
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-semibold tracking-tight text-white mb-6 leading-tight">
             {t('heroTitlePre')}<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300 underline decoration-sky-300">{t('heroTitleSpan')}</span>

@@ -10,6 +10,7 @@ interface SheetSimulatorProps {
   onDelete: (id: string) => void;
   onReset: () => void;
   currentLang: "fr" | "en";
+  exchangeRate?: number;
 }
 
 export default function SheetSimulator({
@@ -18,7 +19,8 @@ export default function SheetSimulator({
   onUpdate,
   onDelete,
   onReset,
-  currentLang
+  currentLang,
+  exchangeRate = 4500
 }: SheetSimulatorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export default function SheetSimulator({
     city: '',
     region: 'Diana',
     priceAriary: 100000,
-    priceEuro: 22,
+    priceUSD: 22,
     photo: '',
     description: '',
     amenities: [],
@@ -56,7 +58,7 @@ export default function SheetSimulator({
       city: '',
       region: 'Diana',
       priceAriary: 90000,
-      priceEuro: 20,
+      priceUSD: 20,
       photo: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=85',
       description: '',
       amenities: ['Wi-Fi gratuit', 'Eau chaude', 'Petit-déjeuner inclus'],
@@ -264,7 +266,7 @@ export default function SheetSimulator({
                         setFormData({
                           ...formData,
                           priceAriary: mga,
-                          priceEuro: Math.round(mga / 4500) // approx 1 EUR = 4500 MGA
+                          priceUSD: Math.round(mga / exchangeRate) // approx 1 USD = exchangeRate MGA
                         });
                       }}
                       placeholder="Ex: 100000"
@@ -272,18 +274,18 @@ export default function SheetSimulator({
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 mb-1">
-                      {currentLang === 'en' ? 'Price in Euro (€)' : 'Prix en Euro (€)'}
+                      {currentLang === 'en' ? 'Price in US Dollars ($)' : 'Prix en Dollar US ($)'}
                     </label>
                     <input
                       type="number"
                       className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
-                      value={formData.priceEuro || ''}
+                      value={formData.priceUSD || ''}
                       onChange={(e) => {
-                        const eur = Number(e.target.value);
+                        const usd = Number(e.target.value);
                         setFormData({
                           ...formData,
-                          priceEuro: eur,
-                          priceAriary: eur * 4500
+                          priceUSD: usd,
+                          priceAriary: usd * exchangeRate
                         });
                       }}
                       placeholder="Ex: 22"
@@ -470,7 +472,7 @@ export default function SheetSimulator({
                       {currentLang === 'en' ? 'Ariary [col E]' : 'Ariary [col E]'}
                     </th>
                     <th className="p-2 border-r border-slate-200 text-right min-w-[70px]">
-                      {currentLang === 'en' ? 'Euro [col F]' : 'Euro [col F]'}
+                      {currentLang === 'en' ? 'Dollar [col F]' : 'Dollar [col F]'}
                     </th>
                     <th className="p-2 border-r border-slate-200 min-w-[100px]">WhatsApp [col G]</th>
                     <th className="p-2 border-r border-slate-200 min-w-[150px]">Description [col H]</th>
@@ -508,7 +510,7 @@ export default function SheetSimulator({
                         {item.priceAriary.toLocaleString()} Ar
                       </td>
                       <td className="p-2 border-r border-slate-200 text-right text-slate-800 font-bold">
-                        {item.priceEuro} €
+                        {item.priceUSD} $
                       </td>
                       <td className="p-2 border-r border-slate-200 text-slate-500">{item.whatsappNumber}</td>
                       <td className="p-2 border-r border-slate-200 text-slate-500 truncate max-w-[180px] font-sans" title={item.description}>

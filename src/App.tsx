@@ -25,6 +25,8 @@ export default function App() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState<"fr" | "en">('fr');
+  const [exchangeRate, setExchangeRate] = useState<number>(4500);
+  const [isRateLive, setIsRateLive] = useState<boolean>(false);
 
   // State for search/filters
   const [filters, setFilters] = useState<FilterState>({
@@ -34,6 +36,27 @@ export default function App() {
     maxPrice: 300000,
     sortBy: 'price-asc',
   });
+
+  // Fetch live exchange rate from free API
+  useEffect(() => {
+    async function fetchRate() {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.rates && data.rates.MGA) {
+            const rate = Math.round(data.rates.MGA);
+            setExchangeRate(rate);
+            setIsRateLive(true);
+            console.log(`Live USD/MGA exchange rate updated: 1$ = ${rate} MGA`);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load live exchange rate, using fallback 4500 MGA', err);
+      }
+    }
+    fetchRate();
+  }, []);
 
   // Reference for focusing the search input
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -55,10 +78,15 @@ export default function App() {
         // Automatically sync default items' photos with current INITIAL_ACCOMMODATIONS photos
         loadedListings = loadedListings.map((item) => {
           const original = INITIAL_ACCOMMODATIONS.find((orig) => orig.id === item.id);
-          if (original && original.photo !== item.photo) {
-            return { ...item, photo: original.photo };
+          const migratedItem = { ...item } as any;
+          // If the listing only has priceEuro, migrate it to priceUSD
+          if (!migratedItem.priceUSD && migratedItem.priceEuro) {
+            migratedItem.priceUSD = migratedItem.priceEuro;
           }
-          return item;
+          if (original && original.photo !== migratedItem.photo) {
+            migratedItem.photo = original.photo;
+          }
+          return migratedItem as Accommodation;
         });
       } else {
         loadedListings = INITIAL_ACCOMMODATIONS;
@@ -227,6 +255,8 @@ export default function App() {
         currentLang={currentLang}
         onLanguageChange={handleLanguageChange}
         onAdminClick={() => setIsAdminOpen(true)}
+        exchangeRate={exchangeRate}
+        isRateLive={isRateLive}
       />
 
       {/* Featured / Coup de Coeur Section */}
@@ -273,7 +303,7 @@ export default function App() {
                     </h3>
                     <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3.5 h-3.5 text-sky-400" />
-                      {item.city} • <span className="font-bold text-slate-700">{item.priceEuro} €{currentLang === 'en' ? '/night' : '/nuit'}</span>
+                      {item.city} • <span className="font-bold text-slate-700">{Math.round(item.priceAriary / exchangeRate)} ${currentLang === 'en' ? '/night' : '/nuit'}</span>
                     </p>
                   </div>
                 </div>
@@ -291,6 +321,7 @@ export default function App() {
         onSelectAccommodation={setSelectedAccommodation}
         searchInputRef={searchInputRef}
         currentLang={currentLang}
+        exchangeRate={exchangeRate}
       />
 
       {/* Concept Explanation / "Comment ça marche" Section */}
@@ -319,8 +350,8 @@ export default function App() {
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed font-sans">
                 {currentLang === 'en'
-                  ? "Explore our live-updated catalog. Use budget (Ariary/Euro) and region filters to locate your perfect stay."
-                  : "Explorez notre catalogue mis à jour. Utilisez les filtres de budget (Ariary / Euro) et de région pour cibler votre gîte idéal."}
+                  ? "Explore our live-updated catalog. Use budget (Ariary/Dollar) and region filters to locate your perfect stay."
+                  : "Explorez notre catalogue mis à jour. Utilisez les filtres de budget (Ariary / Dollar) et de région pour cibler votre gîte idéal."}
               </p>
             </div>
 
@@ -379,6 +410,7 @@ export default function App() {
         onClose={() => setIsRegisterModalOpen(false)}
         onAddAccommodation={handleAddAccommodation}
         currentLang={currentLang}
+        exchangeRate={exchangeRate}
       />
 
       {/* Admin Moderation Dashboard Portal */}
@@ -399,6 +431,7 @@ export default function App() {
         onDelete={handleDeleteAccommodation}
         onReset={handleResetDatabase}
         currentLang={currentLang}
+        exchangeRate={exchangeRate}
       />
 
       {/* Footer information */}
@@ -412,6 +445,7 @@ export default function App() {
         item={selectedAccommodation}
         onClose={() => setSelectedAccommodation(null)}
         currentLang={currentLang}
+        exchangeRate={exchangeRate}
       />
 
     </div>

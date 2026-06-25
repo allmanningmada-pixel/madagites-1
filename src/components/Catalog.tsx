@@ -11,6 +11,7 @@ interface CatalogProps {
   onSelectAccommodation: (item: Accommodation) => void;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
   currentLang: "fr" | "en";
+  exchangeRate?: number;
 }
 
 export default function Catalog({
@@ -19,7 +20,8 @@ export default function Catalog({
   onFilterChange,
   onSelectAccommodation,
   searchInputRef,
-  currentLang
+  currentLang,
+  exchangeRate = 4500
 }: CatalogProps) {
   const searchId = useId();
   const typeId = useId();
@@ -115,7 +117,7 @@ export default function Catalog({
               <div className="flex justify-between items-center text-xs font-bold text-slate-500">
                 <label htmlFor={priceId}>{t('priceMaxLabel')}</label>
                 <span className="text-orange-600 font-semibold font-mono">
-                  {filters.maxPrice.toLocaleString()} Ar (~{Math.round(filters.maxPrice / 4500)}€)
+                  {filters.maxPrice.toLocaleString()} Ar (~{Math.round(filters.maxPrice / exchangeRate)}$)
                 </span>
               </div>
               <input
@@ -231,7 +233,7 @@ export default function Catalog({
                     {item.priceAriary.toLocaleString()} Ar
                   </span>
                   <span className="text-[10px] text-orange-200 font-semibold font-mono leading-none mt-0.5 block">
-                    ~{item.priceEuro}€ {t('perNight')}
+                    ~{Math.round(item.priceAriary / exchangeRate)}$ {t('perNight')}
                   </span>
                 </div>
               </div>

@@ -5,7 +5,7 @@ export interface Accommodation {
   city: string;
   region: string;
   priceAriary: number;
-  priceEuro: number;
+  priceUSD: number;
   photo: string;
   description: string;
   amenities: string[];
