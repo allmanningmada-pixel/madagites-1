@@ -6,7 +6,7 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     // ⚠️ REMPLACEZ 'MadaGites' PAR LE NOM EXACT DE VOTRE REPOSITORY GITHUB
-    base: '/madagites-1/', 
+    base: './', 
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
