@@ -35,7 +35,7 @@ jobs:
           cache: 'npm' # Changez par 'yarn' ou 'pnpm' si vous n'utilisez pas npm
 
       - name: Install dependencies
-        run: npm ci # Utilise 'npm install' si vous n'avez pas de fichier package-lock.json
+        run: npm install # Utilise 'npm install' si vous n'avez pas de fichier package-lock.json
 
       - name: Build project
         run: npm run build
