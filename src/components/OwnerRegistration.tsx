@@ -30,6 +30,7 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
   const [statCardNumber, setStatCardNumber] = useState('');
   const [nifNumber, setNifNumber] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isTermsPopupOpen, setIsTermsPopupOpen] = useState(false);
 
   // Helper Formatters
   const formatStatCard = (value: string) => {
@@ -183,7 +184,9 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
       if (!city.trim()) newErrors.city = "The city is required.";
       if (!priceAriary) newErrors.priceAriary = "The rate in Ariary is required.";
       if (!capacity.trim()) newErrors.capacity = "The capacity (e.g., 2 people) is required.";
+      if (!locationDetails.trim()) newErrors.locationDetails = "Location details & access instructions are required.";
       if (!whatsappNumber.trim()) newErrors.whatsappNumber = "The WhatsApp number is required.";
+      if (selectedAmenities.length === 0) newErrors.selectedAmenities = "Please select at least one amenity or service.";
       if (!description.trim()) newErrors.description = "A description is required.";
       if (!photoBase64) newErrors.photo = "A photo of your premises is required.";
       
@@ -198,14 +201,16 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
         newErrors.nifNumber = "NIF must be exactly 10 digits.";
       }
       if (!acceptedTerms) {
-        newErrors.acceptedTerms = "You must accept the Digital Terms of Use.";
+        newErrors.acceptedTerms = "You must open, read, and accept the Digital Terms of Use inside the popup window.";
       }
     } else {
       if (!name.trim()) newErrors.name = "Le nom de l'hébergement est requis.";
       if (!city.trim()) newErrors.city = "La ville est requise.";
       if (!priceAriary) newErrors.priceAriary = "Le tarif en Ariary est requis.";
       if (!capacity.trim()) newErrors.capacity = "La capacité (ex: 2 personnes) est requise.";
+      if (!locationDetails.trim()) newErrors.locationDetails = "Les précisions de localisation et d'accès sont requises.";
       if (!whatsappNumber.trim()) newErrors.whatsappNumber = "Le numéro WhatsApp est requis.";
+      if (selectedAmenities.length === 0) newErrors.selectedAmenities = "Veuillez sélectionner au moins un équipement ou service.";
       if (!description.trim()) newErrors.description = "Une description est requise.";
       if (!photoBase64) newErrors.photo = "Une photo de vos locaux est requise.";
       
@@ -220,7 +225,7 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
         newErrors.nifNumber = "Le NIF doit comporter exactement 10 chiffres.";
       }
       if (!acceptedTerms) {
-        newErrors.acceptedTerms = "Vous devez accepter les conditions numériques d'utilisation.";
+        newErrors.acceptedTerms = "Vous devez impérativement ouvrir, lire et accepter les conditions numériques d'utilisation dans la fenêtre popup.";
       }
     }
 
@@ -485,17 +490,22 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
             </div>
 
             {/* Precise Location Details */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5" id="err-locationDetails">
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                {currentLang === 'en' ? "Location details & access" : "Précisions de localisation (Accès)"}
+                {currentLang === 'en' ? "Location details & access" : "Précisions de localisation (Accès)"} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={locationDetails}
                 onChange={(e) => setLocationDetails(e.target.value)}
                 placeholder="Ex: À 5min à pied de la plage, Entrée Est du Parc..."
-                className="w-full bg-slate-50 border border-orange-50 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all text-slate-800 placeholder-slate-400 font-medium"
+                className={`w-full bg-slate-50 border ${errors.locationDetails ? 'border-red-400 focus:ring-red-500' : 'border-orange-50 focus:ring-orange-500'} rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all text-slate-800 placeholder-slate-400 font-medium`}
               />
+              {errors.locationDetails && (
+                <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3.5 h-3.5" /> {errors.locationDetails}
+                </p>
+              )}
             </div>
           </div>
 
@@ -602,21 +612,37 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
             </div>
 
             {/* Amenities List */}
-            <div className="md:col-span-2 space-y-2">
+            <div className="md:col-span-2 space-y-2" id="err-selectedAmenities">
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                {currentLang === 'en' ? "Available Amenities & Services" : "Équipements & Services disponibles"}
+                {currentLang === 'en' ? "Available Amenities & Services" : "Équipements & Services disponibles"} <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+              <div className={`grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 p-2 rounded-2xl border transition-all ${
+                errors.selectedAmenities 
+                  ? 'border-red-300 bg-red-50/5' 
+                  : 'border-transparent'
+              }`}>
                 {ALL_AMENITIES_OPTIONS.map((amenity) => {
                   const checked = selectedAmenities.includes(amenity);
                   return (
                     <button
                       key={amenity}
                       type="button"
-                      onClick={() => handleToggleAmenity(amenity)}
+                      onClick={() => {
+                        handleToggleAmenity(amenity);
+                        // Clear error once at least one item is chosen
+                        if (errors.selectedAmenities) {
+                          setErrors(prev => {
+                            const copy = { ...prev };
+                            delete copy.selectedAmenities;
+                            return copy;
+                          });
+                        }
+                      }}
                       className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-left flex items-center gap-2 cursor-pointer ${
                         checked
                           ? 'bg-orange-50 border-orange-200 text-orange-700 shadow-sm font-bold'
+                          : errors.selectedAmenities
+                          ? 'bg-red-50/10 border-red-200/50 text-slate-500 hover:bg-slate-100'
                           : 'bg-slate-50 border-orange-50/40 text-slate-600 hover:bg-slate-100'
                       }`}
                     >
@@ -630,6 +656,11 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
                   );
                 })}
               </div>
+              {errors.selectedAmenities && (
+                <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3.5 h-3.5" /> {errors.selectedAmenities}
+                </p>
+              )}
             </div>
           </div>
 
@@ -801,45 +832,61 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
             <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
               {currentLang === 'en' ? "Digital Terms of Use Contract (MadaGîtes)" : "Conditions Numériques d'Utilisation (MadaGîtes)"} <span className="text-red-500">*</span>
             </label>
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 max-h-48 overflow-y-auto text-xs text-slate-600 space-y-3 font-sans leading-relaxed shadow-inner">
-              {currentLang === 'en' ? (
-                <>
-                  <p className="font-bold text-slate-900">MADAG&Icirc;TES - DIGITAL TERMS OF USE (REGULATORY FRAMEWORK)</p>
-                  <p>1. <strong>Corporate Identification:</strong> To maintain list integrity and adhere to the regulations of local tourism authorities in Madagascar, any host listing a property on MadaG&icirc;tes must declare a valid Statistical Card Number (format: XXXXX XX XXXX X XXXXX) and a Fiscal Identity Number / NIF (format: 10 digits).</p>
-                  <p>2. <strong>Moderation &amp; Independent Approval:</strong> Every newly registered lodging is subject to a review process and will start in a &quot;Pending Approval&quot; state. An independent Administrator has exclusive rights to approve, filter, suspend, or permanently delete any listings that fail to provide correct regulatory credentials, or contain non-compliant materials (&quot;publication non r&eacute;glementaire&quot;).</p>
-                  <p>3. <strong>Strict Expiration Policy (1-Year Validity):</strong> Approved listings are granted a strict validity period of exactly one year (365 days) from the date of Administrator approval, date for date (&quot;validit&eacute; de 1 an date pour date&quot;). Upon reaching the expiration date, listings are automatically deactivated and must be renewed by submitting up-to-date fiscal details.</p>
-                  <p>4. <strong>Direct Relations Policy:</strong> MadaG&icirc;tes acts as a free solidarity directory, promoting sustainable direct commerce between travelers and local owners without commissions. Both parties must communicate in good faith via WhatsApp and resolve booking agreements directly.</p>
-                </>
-              ) : (
-                <>
-                  <p className="font-bold text-slate-900">MADAG&Icirc;TES - CONTRAT DE CONDITIONS NUM&Eacute;RIQUES D'UTILISATION (R&Eacute;GULATION DES G&Icirc;TES)</p>
-                  <p>1. <strong>Identification Fiscale Obligatoire :</strong> Afin de garantir la transparence des services touristiques à Madagascar, tout propriétaire s'engage à renseigner un numéro de Carte Statistique valide (format : XXXXX XX XXXX X XXXXX) ainsi qu'un numéro d'Identité Fiscale / NIF valide (format : 10 chiffres consécutifs).</p>
-                  <p>2. <strong>Modération et Filtrage de Publication :</strong> Toute nouvelle inscription débute avec le statut &quot;En attente de validation&quot;. L'Administrateur de la plateforme dispose d'un pouvoir indépendant de filtrage permettant de valider ou de supprimer immédiatement toute publication non réglementaire ou frauduleuse.</p>
-                  <p>3. <strong>Durée de Validité de la Publication (1 an date pour date) :</strong> Conformément à la réglementation solidaire de MadaGîtes, chaque publication approuvée est valide pour une période stricte de 1 an (365 jours) de date à date à compter de son approbation. À l'échéance de cette période, la publication expire et est retirée du catalogue public jusqu'à sa prochaine validation réglementaire.</p>
-                  <p>4. <strong>Zéro Commission :</strong> La plateforme facilite une mise en relation directe via WhatsApp sans intermédiaire. Les hôtes restent seuls responsables du respect de la législation fiscale en vigueur à Madagascar quant à leurs revenus d'hébergement.</p>
-                </>
-              )}
+
+            <div className={`border rounded-2xl p-4 transition-all ${
+              acceptedTerms 
+                ? 'bg-emerald-50/50 border-emerald-200/60 shadow-sm' 
+                : errors.acceptedTerms 
+                  ? 'bg-red-50/50 border-red-200 shadow-sm animate-pulse' 
+                  : 'bg-slate-50/80 border-slate-200/60 hover:bg-slate-50'
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="font-sans space-y-1">
+                  <span className={`text-xs font-bold block ${acceptedTerms ? 'text-emerald-800' : 'text-slate-700'}`}>
+                    {acceptedTerms 
+                      ? (currentLang === 'en' ? "✓ Terms of Use Read & Accepted" : "✓ Conditions d'utilisation lues et acceptées")
+                      : (currentLang === 'en' ? "Mandatory Terms Review Required" : "Lecture et approbation obligatoire des conditions")}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block max-w-md">
+                    {currentLang === 'en' 
+                      ? "You must open the popup, read our corporate regulatory framework (Stat/NIF), and agree before publishing." 
+                      : "Vous devez impérativement ouvrir le popup, lire nos clauses de conformité (Carte Stat/NIF) et accepter."}
+                  </span>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => setIsTermsPopupOpen(true)}
+                  className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto ${
+                    acceptedTerms 
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/10' 
+                      : errors.acceptedTerms
+                        ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-600/10'
+                        : 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/10'
+                  }`}
+                >
+                  {acceptedTerms 
+                    ? (currentLang === 'en' ? "Review Accepted Terms" : "Revoir les Conditions")
+                    : (currentLang === 'en' ? "Read & Accept Terms" : "Lire & Accepter les Conditions")}
+                </button>
+              </div>
             </div>
 
-            <label className="flex items-start gap-3 p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl cursor-pointer transition-all">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5 rounded text-orange-500 focus:ring-orange-500 w-5 h-5 cursor-pointer accent-orange-500"
-              />
-              <div className="font-sans">
-                <span className="text-xs font-bold text-slate-700 block">
-                  {currentLang === 'en' ? "I accept the Digital Terms of Use & regulatory mandates" : "J'accepte les conditions numériques d'utilisation et mandats réglementaires"}
-                </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">
-                  {currentLang === 'en' 
-                    ? "Certifies that the Statistical Card, NIF, and description details provided are 100% genuine." 
-                    : "Certifie que la Carte Statistique, le NIF et les détails fournis sont authentiques et conformes."}
-                </span>
+            {/* Checkbox itself is read-only but visually confirms agreement */}
+            {acceptedTerms && (
+              <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-semibold font-sans mt-1">
+                <Check className="w-4 h-4 text-emerald-600 stroke-[3]" />
+                {currentLang === 'en' 
+                  ? "Certified Stat Card & NIF accuracy accepted." 
+                  : "Authenticité de la Carte Statistique & NIF certifiée et acceptée."}
               </div>
-            </label>
-            {errors.acceptedTerms && <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1"><AlertCircle className="w-3.5 h-3.5" /> {errors.acceptedTerms}</p>}
+            )}
+            
+            {errors.acceptedTerms && (
+              <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1 mt-1">
+                <AlertCircle className="w-3.5 h-3.5" /> {errors.acceptedTerms}
+              </p>
+            )}
           </div>
 
           <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
@@ -877,6 +924,130 @@ export default function OwnerRegistration({ isOpen, onClose, onAddAccommodation,
         </div>
 
       </form>
+
+      {/* Terms and Conditions Popup Window */}
+      {isTermsPopupOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 overflow-y-auto animate-fadeIn" onClick={() => setIsTermsPopupOpen(false)}>
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden flex flex-col my-8" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-white/10 rounded-xl">
+                  <Check className="w-5 h-5 text-amber-200 stroke-[3]" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-sm sm:text-base leading-none">
+                    {currentLang === 'en' ? "Digital Terms of Use Contract" : "Contrat de Conditions Numériques d'Utilisation"}
+                  </h3>
+                  <p className="text-[10px] text-orange-100 mt-1 font-sans">
+                    {currentLang === 'en' ? "MadaGîtes Mandatory Regulatory Framework" : "Cadre réglementaire obligatoire de MadaGîtes"}
+                  </p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsTermsPopupOpen(false)}
+                className="text-white/80 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body / Content */}
+            <div className="p-6 max-h-[60vh] overflow-y-auto text-xs sm:text-sm text-slate-600 space-y-4 font-sans leading-relaxed">
+              {currentLang === 'en' ? (
+                <>
+                  <p className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">
+                    MADAG&Icirc;TES - DIGITAL TERMS OF USE (REGULATORY FRAMEWORK)
+                  </p>
+                  <div className="space-y-3.5">
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">1. Corporate Identification & Fiscal Mandate</p>
+                      <p className="text-slate-600">To maintain list integrity and adhere to the regulations of local tourism authorities in Madagascar, any host listing a property on MadaG&icirc;tes must declare a valid Statistical Card Number (format: XXXXX XX XXXX X XXXXX) and a Fiscal Identity Number / NIF (format: 10 digits).</p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">2. Moderation &amp; Independent Approval</p>
+                      <p className="text-slate-600">Every newly registered lodging is subject to a review process and will start in a &quot;Pending Approval&quot; state. An independent Administrator has exclusive rights to approve, filter, suspend, or permanently delete any listings that fail to provide correct regulatory credentials, or contain non-compliant materials (&quot;publication non r&eacute;glementaire&quot;).</p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">3. Strict Expiration Policy (1-Year Validity)</p>
+                      <p className="text-slate-600">Approved listings are granted a strict validity period of exactly one year (365 days) from the date of Administrator approval, date for date (&quot;validit&eacute; de 1 an date pour date&quot;). Upon reaching the expiration date, listings are automatically deactivated and must be renewed by submitting up-to-date fiscal details.</p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">4. Direct Relations Policy (Zero Intermediary)</p>
+                      <p className="text-slate-600">MadaG&icirc;tes acts as a free solidarity directory, promoting sustainable direct commerce between travelers and local owners without commissions. Both parties must communicate in good faith via WhatsApp and resolve booking agreements directly.</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">
+                    MADAG&Icirc;TES - CONTRAT DE CONDITIONS NUM&Eacute;RIQUES D'UTILISATION (R&Eacute;GULATION DES G&Icirc;TES)
+                  </p>
+                  <div className="space-y-3.5">
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">1. Identification Fiscale Obligatoire</p>
+                      <p className="text-slate-600">Afin de garantir la transparence des services touristiques à Madagascar, tout propriétaire s'engage à renseigner un numéro de Carte Statistique valide (format : XXXXX XX XXXX X XXXXX) ainsi qu'un numéro d'Identité Fiscale / NIF valide (format : 10 chiffres consécutifs).</p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">2. Modération et Filtrage de Publication</p>
+                      <p className="text-slate-600">Toute nouvelle inscription débute avec le statut &quot;En attente de validation&quot;. L'Administrateur de la plateforme dispose d'un pouvoir indépendant de filtrage permettant de valider ou de supprimer immédiatement toute publication non réglementaire ou frauduleuse.</p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">3. Durée de Validité de la Publication (1 an date pour date)</p>
+                      <p className="text-slate-600">Conformément à la réglementation solidaire de MadaGîtes, chaque publication approuvée est valide pour une période stricte de 1 an (365 jours) de date à date à compter de son approbation. À l'échéance de cette période, la publication expire et est retirée du catalogue public jusqu'à sa prochaine validation réglementaire.</p>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100/80">
+                      <p className="font-bold text-slate-800 mb-1">4. Zéro Commission &amp; Responsabilité</p>
+                      <p className="text-slate-600">La plateforme facilite une mise en relation directe via WhatsApp sans intermédiaire. Les hôtes restent seuls responsables du respect de la législation fiscale en vigueur à Madagascar quant à leurs revenus d'hébergement.</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer / Actions inside Popup */}
+            <div className="p-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-[11px] text-slate-400 italic">
+                {currentLang === 'en' 
+                  ? "By clicking accept, you commit to legal conformity." 
+                  : "En acceptant, vous vous engagez à la conformité légale."}
+              </span>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAcceptedTerms(false);
+                    setIsTermsPopupOpen(false);
+                  }}
+                  className="w-1/2 sm:w-auto px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+                >
+                  {currentLang === 'en' ? "Decline" : "Refuser"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAcceptedTerms(true);
+                    setIsTermsPopupOpen(false);
+                    // clear error if any
+                    if (errors.acceptedTerms) {
+                      setErrors(prev => {
+                        const copy = { ...prev };
+                        delete copy.acceptedTerms;
+                        return copy;
+                      });
+                    }
+                  }}
+                  className="w-1/2 sm:w-auto px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1 shadow-md shadow-emerald-600/10 cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  {currentLang === 'en' ? "Accept and Certify" : "Accepter et Certifier"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
